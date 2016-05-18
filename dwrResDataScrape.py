@@ -5,6 +5,8 @@ import numpy as np
 import datetime
 
 ## setup for url that we are scrapping
+# currently set to start on Friant Dam (station name: MIL) daily reservoir 
+# data table for 01-Jan-1994
 urlstart = 'http://cdec.water.ca.gov/cgi-progs/queryDaily?MIL&d=01-Jan-1994+13:07&span=30days'
 urlparts = urlstart.split("+")
 urlpart1 = urlparts[0][:-11]
