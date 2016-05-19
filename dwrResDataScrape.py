@@ -26,25 +26,43 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import numpy as np
 import datetime
+import time
+
+# output file name
+fname = "FriantDam_DWR_DataTables.csv"
 
 ## setup for url that we are scrapping
-# currently set to start on Friant Dam (station name: MIL) daily reservoir 
-# data table for 01-Jan-1994
-urlstart = 'http://cdec.water.ca.gov/cgi-progs/queryDaily?MIL&d=01-Jan-1994+13:07&span=30days'
+urlstart = 'http://cdec.water.ca.gov/cgi-progs/queryDaily?MIL&d=30-Jan-1994+13:07&span=30days'
 urlparts = urlstart.split("+")
 urlpart1 = urlparts[0][:-11]
 urlpart2 = '+' + urlparts[1]
 url = urlstart # for first loop
 
+datetoday = time.strftime("%d-%b-%Y")
+end_date = datetime.datetime.strptime(datetoday,  "%d-%b-%Y") # for exiting while loop
 
-end_date = datetime.datetime.strptime('17-May-2016',  "%d-%b-%Y") # for exiting while loop
-datenewpage = datetime.datetime.strptime('01-Jan-1994',  "%d-%b-%Y") # just to get into loop
+# grab final header list for correct data column sorting
+urlhdr = urlpart1 + datetoday + urlpart2
+html = urlopen(urlhdr)
+soup = BeautifulSoup(html, "lxml") # grab html code
+colhdr = soup.findAll('tr', limit=2)[0].findAll('font')
+dayheader = colhdr[0].contents
+datahdr = col_headers[1:]
 
-# output file name
-fname = "FriantDam_DWR_DataTables.csv"
+for i in range(len(dataheader)):
+	colheader = dataheader[i]
+	colheader = colheader.a
+	colheader = colheader.contents
+	dataheader[i] = colheader
+
+headersALL = np.append(dayheader, dataheader)
+headersALL = [str(x) for x in headersALL]
+
+# start date for enter while loop
+datenewpage = datetime.datetime.strptime('30-Jan-1994',  "%d-%b-%Y") 
 
 ## Scrape data from web-based data tables ===================================
-while datenewpage<end_date: 
+while datenewpage<end_date:
 
 	html = urlopen(url) # open page
 
@@ -66,8 +84,8 @@ while datenewpage<end_date:
 		colheader = colheader.contents
 		dataheader[i] = colheader
 
-	headersALL = np.append(dayheader, dataheader)
-	headersALL = [str(x) for x in headersALL]
+	headersTbl = np.append(dayheader, dataheader)
+	headersTbl = [str(x) for x in headersTbl]
 
 	## data rows -----------------------------------------------------------
 	data_rows = soup.findAll('tr')[2:]
@@ -88,7 +106,7 @@ while datenewpage<end_date:
 	df = df.drop(df.columns[colcut], axis=1)
 	Ncol = df.shape[1] # new number of columns
 	
-	NcolHeader = len(headersALL)
+	NcolHeader = len(headersTbl)
 
 	# add columns with NaN if there are extra headers
 	if NcolHeader > Ncol:
@@ -98,8 +116,15 @@ while datenewpage<end_date:
 		newidx = np.array(lastidx) + extraHdrs
 		df = pd.concat([df,pd.DataFrame(columns=list(newidx))])
 	
-	df.columns = headersALL
-	df.set_index(headersALL[0])
+	df.columns = headersTbl
+	df.set_index(headersTbl[0])
+
+	## append table to file ------------------------------------------------
+	
+	####### add here new code to match table columns to headersALL before 
+	####### writing to file
+	df.to_csv(fname, mode='a')
+
 	
 	## date for next url ---------------------------------------------------
 	Nrows = df.shape[0]
