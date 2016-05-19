@@ -44,7 +44,7 @@ datenewpage = datetime.datetime.strptime('01-Jan-1994',  "%d-%b-%Y") # just to g
 fname = "FriantDam_DWR_DataTables.csv"
 
 ## Scrape data from web-based data tables ===================================
-while datenewpage!=end_date: # risky conditional statement... need to update this
+while datenewpage<end_date: 
 
 	html = urlopen(url) # open page
 
