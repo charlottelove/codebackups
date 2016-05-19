@@ -1,24 +1,25 @@
-# Script to pull daily reservoir storage data tables from California DWR's
-# webpages at http://cdec.water.ca.gov/misc/daily_res.html 
-# Assembles each data table into pandas DataFrame and appends to a csv 
-# file. 
-# 
-# Improvements needed:
-# 	- Really, really need to figure out how to handle "shifting"
-#	data columns. The data tables gain new data columns through
-#	time, and sometimes the order of columns changes. 
-#	Ideas: Set headers for final DataFrame at start, and match 
-#		the headers read in to the pre-set headers. Fill
-#		empty columns with NaN. 
-#	- Once the above issue is accounted for, only print columns
-#	headers once before looping.
-#	* Currently set to print headers each table, since the columns
-#	shift between pages. (Annoying since it requires manually 
-#	editing the final CSV.)
-#
-# Charlotte Love <calove@uci.edu>
-# 05/18/2016
+'''
+Script to pull daily reservoir storage data tables from California DWR's
+webpages at http://cdec.water.ca.gov/misc/daily_res.html 
+Assembles each data table into pandas DataFrame and appends to a csv 
+file. 
 
+Improvements needed:
+	- Really, really need to figure out how to handle "shifting"
+	data columns. The data tables gain new data columns through
+	time, and sometimes the order of columns changes. 
+	Ideas: Set headers for final DataFrame at start, and match 
+		the headers read in to the pre-set headers. Fill
+		empty columns with NaN. 
+	- Once the above issue is accounted for, only print columns
+	headers once before looping.
+	* Currently set to print headers each table, since the columns
+	shift between pages. (Annoying since it requires manually 
+	editing the final CSV.)
+
+ Charlotte Love <calove@uci.edu>
+ 05/18/2016
+'''
 
 from urllib import urlopen
 from bs4 import BeautifulSoup
