@@ -50,6 +50,7 @@ colhdr = soup.findAll('tr', limit=2)[0].findAll('font')
 dayhdr = colhdr[0].contents
 datahdr = colhdr[1:]
 
+# column names
 for i in range(len(datahdr)):
 	colheader = datahdr[i]
 	colheader = colheader.a
@@ -59,10 +60,21 @@ for i in range(len(datahdr)):
 headersALL = np.append(dayhdr, datahdr)
 headersALL = [str(x) for x in headersALL] # will be used to organize columns
 
+# data units
+unitshdr = soup.findAll('tr', limit=2)[1].findAll('font')
+dataunits = unitshdr[1:]
+for i in range(len(dataunits)):
+	data_unit = dataunits[i]
+	data_unit = data_unit.b.contents
+	dataunits[i] = data_unit
+dataunits = np.append(" ", dataunits)
+dataunits = [str(x) for x in dataunits]
+
 # write headers to final CSV file
 with open(fname, 'wb') as myfile:
 	wr = csv.writer(myfile)
 	wr.writerow(headersALL)
+	wr.writerow(dataunits)
 
 # start date for enter while loop
 datenewpage = datetime.datetime.strptime(start_date,  "%d-%b-%Y") 
