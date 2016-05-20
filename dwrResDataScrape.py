@@ -1,25 +1,21 @@
-'''
+# -*- coding: utf-8 -*-
+"""
+Created on Thu May 19 20:33:31 2016
+
 Script to pull daily reservoir storage data tables from California DWR's
 webpages at http://cdec.water.ca.gov/misc/daily_res.html 
 Assembles each data table into pandas DataFrame and appends to a csv 
 file. 
 
-Improvements needed:
-	- Really, really need to figure out how to handle "shifting"
-	data columns. The data tables gain new data columns through
-	time, and sometimes the order of columns changes. 
-	Ideas: Set headers for final DataFrame at start, and match 
-		the headers read in to the pre-set headers. Fill
-		empty columns with NaN. 
-	- Once the above issue is accounted for, only print columns
-	headers once before looping.
-	* Currently set to print headers each table, since the columns
-	shift between pages. (Annoying since it requires manually 
-	editing the final CSV.)
+Currently set to pull data for Fraint Dam from 01/01/1994 - present
+To change, update:
+	fname = output filename as a string
+	start_date = last date of first page as string in %d-%b-%Y format
+	urlstart = starting url as a string
+	
 
- Charlotte Love <calove@uci.edu>
- 05/18/2016
-'''
+author: Charlotte Love <calove@uci.edu>
+"""
 
 from urllib import urlopen
 from bs4 import BeautifulSoup
@@ -27,12 +23,17 @@ import pandas as pd
 import numpy as np
 import datetime
 import time
+import csv
 
-# output file name
-fname = "FriantDam_DWR_DataTables.csv"
+## USER EDITS ==========================================================
+
+fname = "FriantDam_DWR_DataTables.csv" # output file name
+start_date = "30-Jan-1994" # list here the last date in the table on first page
+urlstart = 'http://cdec.water.ca.gov/cgi-progs/queryDaily?MIL&d=30-Jan-1994+13:07&span=30days'
+
+## END USER EDITS ======================================================
 
 ## setup for url that we are scrapping
-urlstart = 'http://cdec.water.ca.gov/cgi-progs/queryDaily?MIL&d=30-Jan-1994+13:07&span=30days'
 urlparts = urlstart.split("+")
 urlpart1 = urlparts[0][:-11]
 urlpart2 = '+' + urlparts[1]
@@ -46,20 +47,25 @@ urlhdr = urlpart1 + datetoday + urlpart2
 html = urlopen(urlhdr)
 soup = BeautifulSoup(html, "lxml") # grab html code
 colhdr = soup.findAll('tr', limit=2)[0].findAll('font')
-dayheader = colhdr[0].contents
-datahdr = col_headers[1:]
+dayhdr = colhdr[0].contents
+datahdr = colhdr[1:]
 
-for i in range(len(dataheader)):
-	colheader = dataheader[i]
+for i in range(len(datahdr)):
+	colheader = datahdr[i]
 	colheader = colheader.a
 	colheader = colheader.contents
-	dataheader[i] = colheader
+	datahdr[i] = colheader
 
-headersALL = np.append(dayheader, dataheader)
-headersALL = [str(x) for x in headersALL]
+headersALL = np.append(dayhdr, datahdr)
+headersALL = [str(x) for x in headersALL] # will be used to organize columns
+
+# write headers to final CSV file
+with open(fname, 'wb') as myfile:
+	wr = csv.writer(myfile)
+	wr.writerow(headersALL)
 
 # start date for enter while loop
-datenewpage = datetime.datetime.strptime('30-Jan-1994',  "%d-%b-%Y") 
+datenewpage = datetime.datetime.strptime(start_date,  "%d-%b-%Y") 
 
 ## Scrape data from web-based data tables ===================================
 while datenewpage<end_date:
@@ -72,8 +78,7 @@ while datenewpage<end_date:
 	col_headers = soup.findAll('tr', limit=2)[0].findAll('font')
 
 	# date header only
-	dayheader = col_headers[0]
-	dayheader = dayheader.contents
+	dayheader = col_headers[0].contents
 
 	# data headers (have different html coding)
 	dataheader = col_headers[1:]
@@ -98,14 +103,12 @@ while datenewpage<end_date:
 
 	# remove even columns (empty)
 	Ncol = df.shape[1] # number of columns
-	colcut = np.linspace(0,(Ncol+2),((Ncol+2)/2), endpoint=False)
-	colcut = colcut[1:]
+	colcut = np.linspace(0,(Ncol+2),((Ncol+2)/2), endpoint=False)[1:]
 	colcut = [int(x) for x in colcut] # convert to int
 
 	## combine data and headers --------------------------------------------
 	df = df.drop(df.columns[colcut], axis=1)
 	Ncol = df.shape[1] # new number of columns
-	
 	NcolHeader = len(headersTbl)
 
 	# add columns with NaN if there are extra headers
@@ -117,14 +120,18 @@ while datenewpage<end_date:
 		df = pd.concat([df,pd.DataFrame(columns=list(newidx))])
 	
 	df.columns = headersTbl
-	df.set_index(headersTbl[0])
 
 	## append table to file ------------------------------------------------
-	
-	####### add here new code to match table columns to headersALL before 
-	####### writing to file
-	df.to_csv(fname, mode='a')
-
+	newdf = pd.DataFrame(np.nan, index=range(30), columns=range(len(headersALL)))
+     	newdf.columns = headersALL
+      
+     	for i in range(len(headersALL)):
+		try:
+              		newdf[headersALL[i]] = df[headersALL[i]]
+          	except:
+              		pass
+          
+	newdf.to_csv(fname, na_rep='NaN', header=False, index=False, mode='a')
 	
 	## date for next url ---------------------------------------------------
 	Nrows = df.shape[0]
@@ -143,7 +150,3 @@ while datenewpage<end_date:
 
 	# create new url string :)
 	url = urlpart1 + urldate + urlpart2
-
-	## append table to file ------------------------------------------------
-	df.to_csv(fname, mode='a')
-
