@@ -11,7 +11,7 @@ Currently set to pull data for Friant Dam from 01/01/1994 - present
 To change, update:
 	fname = output filename as a string
 	start_date = last date of first page as string in %d-%b-%Y format
-	urlstart = starting url as a string
+	stationstr = station's 3-letter abbreviation as a string in all-caps
 
 author: Charlotte Love <calove@uci.edu>
 """
@@ -28,18 +28,24 @@ import csv
 
 fname = "FriantDam_DWR_DataTables.csv" # output file name
 start_date = "30-Jan-1994" # list here the last date in the table on first page
-urlstart = 'http://cdec.water.ca.gov/cgi-progs/queryDaily?MIL&d=30-Jan-1994+13:07&span=30days'
+stationstr = "MIL" # station 3-letter abbreviation
 
 ## END USER EDITS =============================================================
 
 ## setup for url that we are scrapping
+urlstart = ('http://cdec.water.ca.gov/cgi-progs/queryDaily?' + stationstr +
+		'&d=' + start_date + '+10:32&span=30days')
+url = urlstart # for first loop
+
+# pull out parts before/after date for updating page each loop
 urlparts = urlstart.split("+")
 urlpart1 = urlparts[0][:-11]
 urlpart2 = '+' + urlparts[1]
-url = urlstart # for first loop
 
+# end date for exiting while loop
 datetoday = time.strftime("%d-%b-%Y")
-end_date = datetime.datetime.strptime(datetoday,  "%d-%b-%Y") # for exiting while loop
+end_date = ( datetime.datetime.strptime(datetoday,  "%d-%b-%Y") + 
+	    datetime.timedelta(days=30) ) # for exiting while loop
 
 # grab final header list for correct data column sorting
 urlhdr = urlpart1 + datetoday + urlpart2
@@ -165,3 +171,4 @@ while datenewpage<end_date:
 
 	# create new url string :)
 	url = urlpart1 + urldate + urlpart2
+
