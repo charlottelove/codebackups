@@ -132,7 +132,7 @@ while datenewpage<end_date:
 	
 	df.columns = headersTbl
 
-	## append table to file ------------------------------------------------
+	## sort columns --------------------------------------------------------
 	newdf = pd.DataFrame(np.nan, index=range(30), columns=range(len(headersALL)))
      	newdf.columns = headersALL
       
@@ -141,7 +141,11 @@ while datenewpage<end_date:
               		newdf[headersALL[i]] = df[headersALL[i]]
           	except:
               		pass
+	
+	## replace "--" with "NaN" ---------------------------------------------
+	newdf = newdf.replace(u'        --', 'NaN')
           
+	## append to output file -----------------------------------------------
 	newdf.to_csv(fname, na_rep='NaN', header=False, index=False, mode='a')
 	
 	## date for next url ---------------------------------------------------
