@@ -12,7 +12,6 @@ To change, update:
 	fname = output filename as a string
 	start_date = last date of first page as string in %d-%b-%Y format
 	urlstart = starting url as a string
-	
 
 author: Charlotte Love <calove@uci.edu>
 """
@@ -25,13 +24,13 @@ import datetime
 import time
 import csv
 
-## USER EDITS ==========================================================
+## USER EDITS =================================================================
 
 fname = "FriantDam_DWR_DataTables.csv" # output file name
 start_date = "30-Jan-1994" # list here the last date in the table on first page
 urlstart = 'http://cdec.water.ca.gov/cgi-progs/queryDaily?MIL&d=30-Jan-1994+13:07&span=30days'
 
-## END USER EDITS ======================================================
+## END USER EDITS =============================================================
 
 ## setup for url that we are scrapping
 urlparts = urlstart.split("+")
@@ -67,7 +66,7 @@ with open(fname, 'wb') as myfile:
 # start date for enter while loop
 datenewpage = datetime.datetime.strptime(start_date,  "%d-%b-%Y") 
 
-## Scrape data from web-based data tables ===================================
+## Scrape data from web-based data tables =====================================
 while datenewpage<end_date:
 
 	html = urlopen(url) # open page
