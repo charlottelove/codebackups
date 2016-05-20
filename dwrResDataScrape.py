@@ -7,7 +7,7 @@ webpages at http://cdec.water.ca.gov/misc/daily_res.html
 Assembles each data table into pandas DataFrame and appends to a csv 
 file. 
 
-Currently set to pull data for Fraint Dam from 01/01/1994 - present
+Currently set to pull data for Friant Dam from 01/01/1994 - present
 To change, update:
 	fname = output filename as a string
 	start_date = last date of first page as string in %d-%b-%Y format
