@@ -4,13 +4,13 @@ Created on Thu May 19 20:33:31 2016
 
 Script to pull daily reservoir storage data tables from California DWR's
 webpages at http://cdec.water.ca.gov/misc/daily_res.html 
-Assembles each data table into pandas DataFrame and appends to a csv 
+Assembles each data table into a pandas DataFrame and appends to a csv 
 file. 
 
 Currently set to pull data for Friant Dam from 01/01/1994 - present
 To change, update:
 	fname = output filename as a string
-	start_date = last date of first page as string in %d-%b-%Y format
+	start_date = last date of start page as a string in %d-%b-%Y format
 	stationstr = station's 3-letter abbreviation as a string in all-caps
 
 author: Charlotte Love <calove@uci.edu>
